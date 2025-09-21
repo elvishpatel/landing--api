@@ -1,4 +1,4 @@
-# URL Shortener API with Analytics
+# Landing.In URL Shortener API with Analytics
 
 ![Status](https://img.shields.io/badge/status-live-success)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
