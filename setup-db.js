@@ -1,32 +1,32 @@
-const sqlite3 = require('sqlite3').verbose();
+// Load environment variables from .env file
+require('dotenv').config();
 
-// Create a new database file named 'urls.db'
-const db = new sqlite3.Database('./urls.db', (err) => {
-    if (err) {
-        console.error(err.message);
-    }
-    console.log('Connected to the urls.db database.');
+const { createClient } = require('@libsql/client');
+
+// Connect to the Turso database
+const db = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
-// Create the 'urls' table
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS urls (
+// The SQL command to create the table
+const createTableSql = `
+    CREATE TABLE IF NOT EXISTS urls (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         long_url TEXT NOT NULL,
         short_id TEXT NOT NULL UNIQUE,
         click_count INTEGER DEFAULT 0
-    )`, (err) => {
-        if (err) {
-            return console.error(err.message);
-        }
-        console.log("Successfully created the 'urls' table.");
-    });
-});
+    );
+`;
 
-// Close the database connection
-db.close((err) => {
-    if (err) {
-        console.error(err.message);
+async function setupDatabase() {
+    try {
+        console.log("Executing CREATE TABLE statement...");
+        await db.execute(createTableSql);
+        console.log("Table 'urls' created or already exists. ✅");
+    } catch (err) {
+        console.error("Error setting up the database:", err);
     }
-    console.log('Closed the database connection.');
-});
+}
+
+setupDatabase();
