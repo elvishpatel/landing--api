@@ -1,6 +1,5 @@
 const express = require('express');
 const { createClient } = require('@libsql/client');
-// Ensure you have run 'npm install nanoid@2'
 const { nanoid } = require('nanoid');
 
 const app = express();
@@ -85,4 +84,5 @@ app.get('/:shortId', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+
 });
