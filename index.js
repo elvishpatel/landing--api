@@ -16,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // --- 1. Generate a new Short URL ---
+// This route is already correct.
 app.post('/generateshorturl', async (req, res) => {
     const { longUrl } = req.body;
 
@@ -40,17 +41,23 @@ app.post('/generateshorturl', async (req, res) => {
 });
 
 // --- 2. Get Click Count ---
+// MODIFIED: This route is now fixed.
 app.get('/count/:shortId', async (req, res) => {
     const { shortId } = req.params;
     const sql = `SELECT click_count FROM urls WHERE short_id = ?`;
 
     try {
-        const result = await db.get(sql, [shortId]);
+        // Use db.execute() which returns a result object
+        const result = await db.execute({ sql: sql, args: [shortId] });
 
-        if (!result) {
+        // Check if the 'rows' array is empty
+        if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Short URL not found.' });
         }
-        res.status(200).json({ shortId, clicks: result.click_count });
+        
+        // Get the first row from the 'rows' array
+        const row = result.rows[0];
+        res.status(200).json({ shortId, clicks: row.click_count });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Database error.' });
@@ -58,16 +65,22 @@ app.get('/count/:shortId', async (req, res) => {
 });
 
 // --- 3. Redirect Short URL ---
+// MODIFIED: This route is now fixed.
 app.get('/:shortId', async (req, res) => {
     const { shortId } = req.params;
 
     try {
         const findSql = `SELECT long_url FROM urls WHERE short_id = ?`;
-        const row = await db.get(findSql, [shortId]);
+        // Use db.execute() which returns a result object
+        const result = await db.execute({ sql: findSql, args: [shortId] });
 
-        if (!row) {
+        // Check if the 'rows' array is empty
+        if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Short URL not found.' });
         }
+
+        // Get the first row from the 'rows' array
+        const row = result.rows[0];
 
         // Update the click count
         const updateSql = `UPDATE urls SET click_count = click_count + 1 WHERE short_id = ?`;
